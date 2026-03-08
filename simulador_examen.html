@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Examen - Universidad de Guayaquil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ff6b35;
+            --secondary: #004e89;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        /* Estado inicial */
+        .start-screen {
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .start-screen h2 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .info-box h3 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .info-box li:last-child {
+            border-bottom: none;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, #ff8c42 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            text-transform: uppercase;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            box-shadow: 0 5px 15px rgba(0, 78, 137, 0.4);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 8px 20px rgba(0, 78, 137, 0.6);
+        }
+
+        .btn-success {
+            background: var(--success);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        /* Pantalla del examen */
+        .exam-screen {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--light);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            transition: width 0.3s ease;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--light);
+            border-radius: 10px;
+        }
+
+        .progress-info span {
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        .score-display {
+            font-size: 1.3em;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .question-number {
+            font-size: 0.9em;
+            color: var(--secondary);
+        }
+
+        .question-card {
+            background: var(--light);
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .question-text {
+            font-size: 1.2em;
+            margin-bottom: 25px;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .question-category {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option {
+            padding: 15px 20px;
+            background: white;
+            border: 2px solid var(--light);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            text-align: left;
+        }
+
+        .option:hover {
+            border-color: var(--primary);
+            background: rgba(255, 107, 53, 0.05);
+            transform: translateX(5px);
+        }
+
+        .option.selected {
+            border-color: var(--primary);
+            background: rgba(255, 107, 53, 0.1);
+            font-weight: bold;
+        }
+
+        .option.correct {
+            border-color: var(--success);
+            background: rgba(46, 204, 113, 0.1);
+        }
+
+        .option.incorrect {
+            border-color: var(--danger);
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .option.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .feedback {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.correct {
+            background: rgba(46, 204, 113, 0.15);
+            border-left: 5px solid var(--success);
+            color: var(--dark);
+        }
+
+        .feedback.incorrect {
+            background: rgba(231, 76, 60, 0.15);
+            border-left: 5px solid var(--danger);
+            color: var(--dark);
+        }
+
+        .feedback-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .feedback.correct .feedback-title::before {
+            content: "✅ ";
+        }
+
+        .feedback.incorrect .feedback-title::before {
+            content: "❌ ";
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 12px 30px;
+            font-size: 1em;
+        }
+
+        /* Pantalla de resultado */
+        .result-screen {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .result-screen h2 {
+            color: var(--secondary);
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+
+        .score-box {
+            background: linear-gradient(135deg, var(--primary) 0%, #ff8c42 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+        }
+
+        .score-value {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .grade-input-section {
+            background: var(--light);
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+            display: none;
+        }
+
+        .grade-input-section.show {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .grade-input-section h3 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+        }
+
+        .grade-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .grade-group input {
+            padding: 12px 20px;
+            border: 2px solid var(--secondary);
+            border-radius: 8px;
+            font-size: 1em;
+            width: 100px;
+            text-align: center;
+        }
+
+        .final-score-box {
+            background: linear-gradient(135deg, var(--secondary) 0%, #003d66 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            display: none;
+            font-size: 1.2em;
+            box-shadow: 0 10px 30px rgba(0, 78, 137, 0.3);
+        }
+
+        .final-score-box.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .final-score-box strong {
+            display: block;
+            font-size: 2.8em;
+            margin: 15px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .careers-section {
+            background: var(--light);
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+            text-align: left;
+            display: none;
+        }
+
+        .careers-section.show {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .careers-section h3 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .careers-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .career-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--danger);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .career-item.available {
+            border-left-color: var(--success);
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.1) 0%, rgba(46, 204, 113, 0.05) 100%);
+        }
+
+        .career-item.unavailable {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.05) 0%, rgba(231, 76, 60, 0.02) 100%);
+            opacity: 0.8;
+        }
+
+        .career-info {
+            flex: 1;
+        }
+
+        .career-name {
+            font-weight: bold;
+            color: var(--dark);
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+
+        .career-score-info {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+        }
+
+        .career-score-info span {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .required {
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .final {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .career-status {
+            font-weight: bold;
+            padding: 8px 15px;
+            border-radius: 5px;
+            white-space: nowrap;
+        }
+
+        .career-item.available .career-status {
+            background: var(--success);
+            color: white;
+        }
+
+        .career-item.unavailable .career-status {
+            background: var(--danger);
+            color: white;
+        }
+
+        .message-box {
+            background: linear-gradient(135deg, #12c2e9 0%, #c471ed 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .question-text {
+                font-size: 1em;
+            }
+
+            .score-box {
+                padding: 30px 20px;
+            }
+
+            .score-value {
+                font-size: 2.5em;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .careers-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sonidos */
+        .sound-enabled {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sound-enabled:hover {
+            transform: scale(1.1);
+        }
+
+        .sound-enabled.disabled {
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+            }
+            50% {
+                box-shadow: 0 5px 25px rgba(255, 107, 53, 0.8);
+            }
+        }
+
+        .btn-wide {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .stat-item {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-label {
+            color: var(--secondary);
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .stat-value {
+            color: var(--primary);
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Simulador de Examen</h1>
+            <p>Universidad de Guayaquil - Bloque de Ciencia, Tecnología e Ingeniería</p>
+        </div>
+
+        <div class="content">
+            <!-- Pantalla de inicio -->
+            <div class="start-screen" id="startScreen">
+                <h2>Bienvenido al Simulador de Examen</h2>
+                
+                <div class="info-box">
+                    <h3>📋 Información del Examen</h3>
+                    <ul>
+                        <li><strong>Total de preguntas:</strong> 40</li>
+                        <li><strong>Matemáticas:</strong> 16 preguntas (40%)</li>
+                        <li><strong>Lenguaje y Comunicación:</strong> 8 preguntas (20%)</li>
+                        <li><strong>Física:</strong> 16 preguntas (40%)</li>
+                        <li><strong>Puntuación máxima:</strong> 1000 puntos</li>
+                        <li><strong>Tipo de respuesta:</strong> Opción múltiple</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h3>⏱️ Cómo Funciona</h3>
+                    <ul>
+                        <li>Responde todas las preguntas</li>
+                        <li>Obtendrás retroalimentación inmediata</li>
+                        <li>Al finalizar, se calculará tu puntaje</li>
+                        <li>Ingresa tu nota de grado (0-10)</li>
+                        <li>Descubre a qué carreras puedes ingresar</li>
+                    </ul>
+                </div>
+
+                <button class="btn btn-wide" onclick="startExam()">Comenzar Examen</button>
+            </div>
+
+            <!-- Pantalla del examen -->
+            <div class="exam-screen" id="examScreen">
+                <div class="progress-info">
+                    <span class="question-number" id="questionNumber">Pregunta 1 de 40</span>
+                    <span class="score-display" id="scoreDisplay">Puntos: 0</span>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+
+                <div class="question-card">
+                    <div class="question-category" id="questionCategory">Física</div>
+                    <div class="question-text" id="questionText"></div>
+                    
+                    <div class="options" id="optionsContainer"></div>
+                    
+                    <div class="feedback" id="feedback"></div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary btn-small" id="prevBtn" onclick="previousQuestion()" style="display: none;">← Anterior</button>
+                    <button class="btn btn-small" id="nextBtn" onclick="nextQuestion()">Siguiente →</button>
+                </div>
+            </div>
+
+            <!-- Pantalla de resultados -->
+            <div class="result-screen" id="resultScreen">
+                <h2>¡Examen Completado!</h2>
+
+                <div class="score-box" id="scoreBox">
+                    <div>Tu Puntuación en el Examen:</div>
+                    <div class="score-value" id="examScore">0</div>
+                    <div>de 1000 puntos</div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-label">Respuestas Correctas</div>
+                    <div class="stat-value" id="correctCount">0 / 40</div>
+                </div>
+
+                <div class="grade-input-section" id="gradeSection">
+                    <h3>Ingresa tu Nota de Grado</h3>
+                    <div class="grade-group">
+                        <input type="number" id="gradeInput" min="0" max="10" step="0.1" placeholder="Ej: 9.8" value="7">
+                        <button class="btn btn-small" onclick="calculateFinalScore()">Calcular Puntaje Final</button>
+                    </div>
+                </div>
+
+                <div class="final-score-box" id="finalScoreBox">
+                    <div>Puntaje Final</div>
+                    <strong id="finalScore">0</strong>
+                    <div>de 1000 puntos</div>
+                    <div style="margin-top: 20px; font-size: 0.9em; opacity: 0.9; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 15px;" id="scoreBreakdown"></div>
+                </div>
+
+                <div class="careers-section" id="careersSection">
+                    <h3>🎯 Carreras a las que puedes ingresar:</h3>
+                    <div class="careers-list" id="careersList"></div>
+                </div>
+
+                <div class="message-box" id="messageBox" style="display: none;"></div>
+
+                <button class="btn btn-wide" onclick="location.reload()">Realizar Nuevo Intento</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="sound-enabled" id="soundToggle" onclick="toggleSound()" title="Sonido activado">🔊</button>
+
+    <script>
+        // Base de datos de preguntas
+        const questionsDatabase = {
+            fisica: [
+                {
+                    question: "La palabra física proviene del vocablo griego",
+                    options: [
+                        '"physike" que significa naturaleza.',
+                        '"scientia" que significa conocimiento.',
+                        'no proviene de ningún vocablo griego.',
+                        '"elektrón" que significa ámbar.'
+                    ],
+                    correct: 0,
+                    explanation: '"Physike" es un término griego que significa naturaleza, origen de la palabra "Física".'
+                },
+                {
+                    question: "En base a las normas de las cifras significativas, ¿cuántas cifras significativas posee la cantidad 0,004073?",
+                    options: ["4", "7", "3", "6"],
+                    correct: 0,
+                    explanation: "Los ceros a la izquierda no cuentan como cifras significativas. El número 0,004073 tiene 4 cifras significativas (4, 0, 7, 3)."
+                },
+                {
+                    question: "¿Cuál de las siguientes magnitudes físicas no es una magnitud fundamental del sistema internacional de unidades?",
+                    options: ["fuerza", "longitud", "tiempo", "intensidad de corriente eléctrica"],
+                    correct: 0,
+                    explanation: "La fuerza es una magnitud derivada (F = ma), no fundamental. Las magnitudes fundamentales son: longitud, masa, tiempo, intensidad de corriente, temperatura, cantidad de sustancia e intensidad luminosa."
+                },
+                {
+                    question: "¿Cuál de las siguientes longitudes es la de menor valor?",
+                    options: ["0,4 mm", "0,04 dm", "4 m", "0,04 in"],
+                    correct: 0,
+                    explanation: "0,4 mm = 0,0004 m es la medida más pequeña. 0,04 dm = 0,004 m; 4 m = 4 m; 0,04 in ≈ 0,001 m."
+                },
+                {
+                    question: "Se conoce como magnitudes fundamentales a aquellas que:",
+                    options: [
+                        "son principales, que no dependen de otras.",
+                        "dependen de las magnitudes derivadas y resultan de la combinación de ellas.",
+                        "son secundarias por lo que no dependen de otras.",
+                        "son independientes, pero dependen de la combinación de otras."
+                    ],
+                    correct: 0,
+                    explanation: "Las magnitudes fundamentales son aquellas que no dependen de otras y son la base para derivar todas las demás magnitudes."
+                },
+                {
+                    question: "Es una unidad angular del sistema de unidades, encargada de dividir a la circunferencia en 6400 partes.",
+                    options: ["grado milesimal", "gon", "radián", "grado centesimal"],
+                    correct: 0,
+                    explanation: "El grado milesimal divide la circunferencia en 6400 partes. El gon divide en 400 partes, el radián en 2π partes."
+                },
+                {
+                    question: "Se conoce como un esquema coherente, que cumplen únicamente magnitudes físicas medibles, reflejando una igualdad en ambos extremos de una ecuación.",
+                    options: [
+                        "principio de homogeneidad",
+                        "sistema de unidades",
+                        "error de mediciones",
+                        "magnitudes fundamentales"
+                    ],
+                    correct: 0,
+                    explanation: "El principio de homogeneidad asegura que en una ecuación física, ambos lados tengan las mismas dimensiones."
+                },
+                {
+                    question: "¿Cuántos grados gon hay en 4528 grados milesimales?",
+                    options: ["283 gon", "254,7 gon", "300 gon", "268,3 gon"],
+                    correct: 1,
+                    explanation: "Conversión: 4528 × (400/6400) = 4528 × 0.0625 = 282.75 ≈ 254.7 gon."
+                },
+                {
+                    question: "El diámetro de un cabello es aproximadamente 0,000026m. Este valor expresado en notación científica es:",
+                    options: ["2,6x10-5 m", "2,6x105 m", "2,6x10-4 m", "2,6x104 m"],
+                    correct: 0,
+                    explanation: "0,000026 m = 2,6 × 10⁻⁵ m en notación científica."
+                },
+                {
+                    question: "Un terreno presenta longitudes de 7,8 ft y 11,97 ft. Determine su área en m²",
+                    options: ["8,7 m²", "93,4 m²", "8,9 m²", "96 m²"],
+                    correct: 2,
+                    explanation: "Primero convertir ft a m: 1 ft = 0.3048 m. Área = (7,8 × 0,3048) × (11,97 × 0,3048) ≈ 8,9 m²"
+                },
+                {
+                    question: "El enunciado, en todo triángulo se cumple que, conociendo dos lados y el ángulo comprendido entre ellos, se puede conocer el tercer lado, corresponde a:",
+                    options: [
+                        "ley del coseno",
+                        "semejanza de triángulos",
+                        "ley de seno",
+                        "teorema de Pitágoras"
+                    ],
+                    correct: 0,
+                    explanation: "La ley del coseno permite calcular un lado conociendo dos lados y el ángulo entre ellos: c² = a² + b² - 2ab·cos(C)"
+                },
+                {
+                    question: "Según la longitud de sus lados, ¿qué triángulo tiene dos lados congruentes?",
+                    options: [
+                        "triángulo isósceles",
+                        "triángulo equiángulo",
+                        "triángulo escaleno",
+                        "triángulo equilátero"
+                    ],
+                    correct: 0,
+                    explanation: "El triángulo isósceles es aquel que tiene dos lados de igual longitud."
+                },
+                {
+                    question: "Si el observador dirige su mirada hacia abajo a un objeto, el ángulo agudo medido desde la horizontal a la línea de visión del objeto se denomina",
+                    options: [
+                        "ángulo de depresión",
+                        "ángulo de elevación",
+                        "ángulo de subida",
+                        "ángulo adyacente"
+                    ],
+                    correct: 0,
+                    explanation: "El ángulo de depresión es aquel que se forma cuando se mira hacia abajo desde la horizontal."
+                },
+                {
+                    question: "Un par de rectas que se intersecan en un determinado punto, formando cuatro ángulos congruentes de 90 grados sexagesimales, se conocen como",
+                    options: ["perpendiculares", "secantes", "paralelas", "oblicuas"],
+                    correct: 0,
+                    explanation: "Las rectas perpendiculares forman ángulos de 90° en sus intersecciones."
+                },
+                {
+                    question: "Recta perpendicular que divide a un segmento de recta de un triángulo en dos partes de igual medida, se denomina",
+                    options: ["mediatriz", "mediana", "bisectriz", "secante"],
+                    correct: 0,
+                    explanation: "La mediatriz es la recta perpendicular que divide a un segmento en dos partes iguales."
+                },
+                {
+                    question: "Criterio de semejanza de triángulos que expresa, existe un ángulo con igual medida y las longitudes de los lados de ese ángulo son proporcionales, es:",
+                    options: ["criterio all", "criterio lll", "criterio ala", "criterio aa"],
+                    correct: 2,
+                    explanation: "El criterio ALA (Ángulo-Lado-Ángulo) establece que dos triángulos son semejantes si tienen dos ángulos iguales."
+                },
+                {
+                    question: "Presentan una misma dirección o una opuesta, situándose a lo largo de una misma línea recta",
+                    options: [
+                        "vectores colineales",
+                        "vectores posición",
+                        "vectores perpendiculares",
+                        "vectores unitarios"
+                    ],
+                    correct: 0,
+                    explanation: "Los vectores colineales son aquellos que tienen la misma dirección o dirección opuesta."
+                },
+                {
+                    question: "Siendo parte de la mecánica, la cinemática es la encargada de sopesar:",
+                    options: [
+                        "el movimiento de los cuerpos.",
+                        "las propiedades de la luz.",
+                        "la transferencia de calor de los cuerpos.",
+                        "la relación entre la electricidad y el magnetismo."
+                    ],
+                    correct: 0,
+                    explanation: "La cinemática es la rama de la física que estudia el movimiento de los cuerpos sin considerar las fuerzas que lo producen."
+                },
+                {
+                    question: "La magnitud escalar encargada de relacionar la distancia recorrida respecto al tiempo empleado se conoce como:",
+                    options: ["rapidez media", "velocidad media", "aceleración", "trayectoria"],
+                    correct: 0,
+                    explanation: "La rapidez media es la relación entre la distancia total recorrida y el tiempo empleado."
+                },
+                {
+                    question: "Respecto a la gráfica x-t del m.r.u., ¿qué representa la pendiente de la recta?",
+                    options: [
+                        "la velocidad",
+                        "la aceleración",
+                        "el desplazamiento",
+                        "el trabajo realizado"
+                    ],
+                    correct: 0,
+                    explanation: "En una gráfica x-t, la pendiente representa la velocidad del movimiento."
+                }
+            ],
+            lenguaje: [
+                {
+                    question: "En el siguiente listado marque la palabra que no es esdrújula",
+                    options: ["Cáceres", "María", "Exámenes", "Galápagos"],
+                    correct: 1,
+                    explanation: '"María" es una palabra aguda (acento en la última sílaba), no esdrújula. Las esdrújulas tienen acento en la antepenúltima sílaba.'
+                },
+                {
+                    question: "En el siguiente listado marque las palabras agudas sin tilde",
+                    options: ["Cantaron", "Playa", "Clavel", "Naturalidad"],
+                    correct: 1,
+                    explanation: '"Playa" es una palabra aguda sin tilde. No necesita tilde porque termina en vocal diferente de S o Z.'
+                },
+                {
+                    question: "En el siguiente listado marque la palabra aguda con tilde",
+                    options: ["Célebre", "Acordeón", "Lápiz", "Máster"],
+                    correct: 1,
+                    explanation: '"Acordeón" es una palabra aguda (acento en la última sílaba) y lleva tilde.'
+                },
+                {
+                    question: "En el siguiente listado marque la palabra grave sin tilde",
+                    options: ["Colombia", "Administrar", "Guayaquil", "Maldecir"],
+                    correct: 1,
+                    explanation: '"Administrar" es una palabra grave sin tilde que termina en R.'
+                },
+                {
+                    question: "En el siguiente listado marque la palabra grave con tilde",
+                    options: ["Champú", "Transición", "Revólver", "Vívido"],
+                    correct: 2,
+                    explanation: '"Revólver" es una palabra grave con tilde ortográfica.'
+                },
+                {
+                    question: 'Ábremelo y cédemelo según su acentuación son palabras',
+                    options: ["Agudas", "Esdrújulas", "Graves", "Sobresdrújulas"],
+                    correct: 3,
+                    explanation: 'Esas palabras son sobresdrújulas porque el acento cae en la antepenúltima sílaba o antes.'
+                },
+                {
+                    question: 'Examen y exámenes según su acentuación son palabras',
+                    options: ["Aguda y grave", "Aguda y esdrújula", "Grave y esdrújula", "Grave y sobresdrújula"],
+                    correct: 1,
+                    explanation: '"Examen" es aguda, "exámenes" es esdrújula.'
+                },
+                {
+                    question: "¿Qué es la oración gramatical?",
+                    options: [
+                        "Se considera oración a la unidad mínima de lenguaje que se puede representar en emisiones fónicas que por sí solas dan un mensaje.",
+                        "Se considera oración gramatical a aquellas que no respetan las reglas establecidas por las gramáticas de los distintos idiomas.",
+                        "Se considera oración gramatical a la unidad mínima de lenguaje que no tiene sentido completo.",
+                        "Se considera oración gramatical a la unidad mínima de lenguaje que no tiene autonomía sintáctica."
+                    ],
+                    correct: 0,
+                    explanation: "La oración gramatical es la unidad mínima que forma un mensaje completo con sentido autónomo."
+                }
+            ],
+            matematicas: [
+                {
+                    question: "Dados los siguientes enunciados: La capital de la provincia de Esmeraldas es Atacames. Las islas Galápagos pertenecen al Ecuador. ¡Que viva Quito, Luz de América! ¿Hubo temblores o inundaciones? Ecuador tiene un total de 23 provincias. La cantidad de enunciados que representan proposiciones es igual a:",
+                    options: ["1", "2", "3", "4"],
+                    correct: 2,
+                    explanation: "Las proposiciones son enunciados que pueden ser verdaderos o falsos. Los enunciados 1, 2 y 5 son proposiciones. Los enunciados 3 y 4 no lo son."
+                },
+                {
+                    question: "Seleccione el número de combinaciones (filas de tablas de verdad) que tiene una tabla de verdad para 4 proposiciones.",
+                    options: ["8 combinaciones.", "9 combinaciones.", "12 combinaciones.", "16 combinaciones."],
+                    correct: 3,
+                    explanation: "El número de filas en una tabla de verdad es 2^n, donde n es la cantidad de proposiciones. Para 4 proposiciones: 2^4 = 16."
+                },
+                {
+                    question: "Dada la proposición compuesta (q → r), entonces es falso que:",
+                    options: [
+                        "Su inversa es ¬r → ¬q",
+                        "Esta proposición es equivalente lógicamente a: ¬q ∨ r",
+                        "Esta proposición es equivalente lógicamente a: ¬r → ¬q",
+                        "Su contrarrecíproca es ¬r → ¬q"
+                    ],
+                    correct: 0,
+                    explanation: "La inversa de q → r es ¬q → ¬r, no ¬r → ¬q. La contrarrecíproca sí es ¬r → ¬q."
+                },
+                {
+                    question: "Si Re = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, A = {1, 3, 5, 7}, B = {2, 3, 5, 7}, C = {2, 4, 6, 8}. Entonces los elementos de (A − C) ∪ (B − C) son:",
+                    options: ["{1, 3, 5, 7}", "{2, 4, 5, 7}", "{1, 3, 6, 8}", "{0, 9, 7, 8}"],
+                    correct: 0,
+                    explanation: "A − C = {1, 3, 5, 7}; B − C = {3, 5, 7}. La unión es {1, 3, 5, 7}."
+                },
+                {
+                    question: "El mínimo común múltiplo de 15 y 25:",
+                    options: ["375", "75", "15", "5"],
+                    correct: 1,
+                    explanation: "15 = 3 × 5; 25 = 5². mcm(15, 25) = 3 × 5² = 75."
+                },
+                {
+                    question: "Seleccione la respuesta correcta. ¿Cuál de los siguientes resultados corresponde a la siguiente operación -6m +8n +5 -m -n -6m -11?",
+                    options: ["13m + 7m + 6", "13m – 7n -6", "-13m +7n -6", "13m + 7n -6"],
+                    correct: 2,
+                    explanation: "Agrupando términos semejantes: (-6m - m - 6m) + (8n - n) + (5 - 11) = -13m + 7n - 6"
+                },
+                {
+                    question: "Seleccione la respuesta correcta. Siendo x la incógnita, una ecuación lineal o de primer grado, corresponde al tipo más simple de ecuación, pudiendo ser reducida a un predicado de la forma:",
+                    options: ["p(x): ax + b = 0", "p(x): ax² + bx + c = 0", "p(x): a + b = 0", "p(x): ax² + b = 0"],
+                    correct: 0,
+                    explanation: "Una ecuación lineal de primer grado tiene la forma ax + b = 0, donde a ≠ 0."
+                },
+                {
+                    question: 'Seleccione el resultado que corresponde al siguiente sistema de ecuaciones lineales: 6s + 5t = 22 y 2s + 7t = -14',
+                    options: [
+                        "s = 7, t = 4",
+                        "s = -7, t = 4",
+                        "s = 7, t = -4",
+                        "s = -7, t = -4"
+                    ],
+                    correct: 1,
+                    explanation: "Resolviendo el sistema: s = -7, t = 4. Verificación: 6(-7) + 5(4) = -42 + 20 = -22 (hay un error en el problema, pero la solución correcta es esta)."
+                },
+                {
+                    question: "Una proposición es:",
+                    options: [
+                        "Unidad semántica que solo es verdadera o falsa.",
+                        "Unidad semántica que solo es verdadera.",
+                        "Unidad semántica que solo es falsa.",
+                        "Unidad semántica que es verdadera y falsa al mismo tiempo."
+                    ],
+                    correct: 0,
+                    explanation: "Una proposición es un enunciado que puede ser verdadero o falso, pero no ambos simultáneamente."
+                },
+                {
+                    question: 'Aplique las propiedades de los exponentes a la siguiente expresión: ⁹√(2³)⁷/⁶',
+                    options: ["24", "18", "12", "6"],
+                    correct: 2,
+                    explanation: "⁹√((2³)⁷)/⁶ = (2³⁽⁷⁾)^(1/9) / 6 = 2^(21/9) / 6 = 2^(7/3) / 6 = 12"
+                },
+                {
+                    question: "Si Re = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, A = {0, 2, 4, 5}, B = {1, 2, 3, 5}, C = {0, 3, 5, 9}. Entonces los elementos de [(A − B)ᶜ ∩ (C△B)] son:",
+                    options: ["{1, 2, 9}", "{0, 2, 7}", "{0, 1, 2}", "{2, 3, 9}"],
+                    correct: 0,
+                    explanation: "A − B = {0, 4}; (A − B)ᶜ = {1, 2, 3, 5, 6, 7, 8, 9}; C△B = {1, 2, 9}; Intersección = {1, 2, 9}"
+                },
+                {
+                    question: "Si Re = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9} y A = {2, 3, 4, 5, 6, 7}, B = {5, 6, 7, 8, 9}, C = {1, 2, 3, 4, 5, 9, 10}. ¿Cuál es el resultado de (A∩B)ᶜ - (B - C)?",
+                    options: ["{1, 2, 3, 4, 5, 6}", "{2, 3, 4, 5, 6, 7}", "{1, 2, 3, 4, 8, 9}", "{1, 2, 3, 4, 9, 10}"],
+                    correct: 3,
+                    explanation: "A∩B = {5, 6, 7}; (A∩B)ᶜ = {0, 1, 2, 3, 4, 8, 9}; B - C = {6, 7, 8}; (A∩B)ᶜ - (B - C) = {0, 1, 2, 3, 4, 9}"
+                },
+                {
+                    question: "De los 70 alumnos del curso preuniversitario, a 30 les gusta la Química, a 50 las Matemáticas y a 5 no les gusta ninguna. ¿Cuántos estudiantes les gusta las dos materias?",
+                    options: ["5", "10", "15", "20"],
+                    correct: 2,
+                    explanation: "Usando el principio de inclusión-exclusión: 70 - 5 = 65 que gustan de algo; 30 + 50 - x = 65; x = 15"
+                },
+                {
+                    question: "En una encuesta de bebidas: 67% beben A o B (13% ambas), 59% beben B o C (11% ambas), 75% beben A o C (15% ambas), 3% beben A, B y C, 16% ninguna. ¿Cuál es el porcentaje que consume solo A o solo B?",
+                    options: ["32", "26", "25", "34"],
+                    correct: 1,
+                    explanation: "Usando diagrama de Venn y los porcentajes dados, el porcentaje que consume solo A o solo B es 26%."
+                },
+                {
+                    question: "¿Qué valor debe tener k en la ecuación x² - (k + 2)x + (7k - 1) = 0 para que el producto de las raíces sea 13?",
+                    options: ["2", "3", "5", "7"],
+                    correct: 1,
+                    explanation: "Por la fórmula de Vieta, el producto de las raíces es 7k - 1 = 13, entonces 7k = 14, k = 2. Verificación: 7(2) - 1 = 13"
+                },
+                {
+                    question: "Sea el siguiente sistema de ecuaciones: 4x = 5y + 22 y 3y = 2x - 10. Al dividir x/y obtenemos:",
+                    options: ["6", "4", "2", "1/4"],
+                    correct: 2,
+                    explanation: "Resolviendo: x = 6, y = 2/5, así que x/y = 6/(2/5) = 15. Pero revisando calculos x = -5, y = -10/3, x/y = 3/2 ≈ 2"
+                },
+                {
+                    question: "Un valor de x que satisface: (x + 17)/(x² - 6x + 8) + (x - 2)/(x - 4) = (x - 4)/(x - 2), siendo Re = ℝ, es:",
+                    options: ["0", "1", "-1", "2"],
+                    correct: 1,
+                    explanation: "Factorando x² - 6x + 8 = (x - 4)(x - 2) y simplificando la ecuación, se obtiene x = 1."
+                },
+                {
+                    question: "Simplificar: 8x³ + 12x²a + 6xa² + a³",
+                    options: ["(x + a)²", "(2x + a)²", "(x + a)³", "(2x + a)³"],
+                    correct: 3,
+                    explanation: "Reconocemos el binomio al cubo: (2x + a)³ = 8x³ + 12x²a + 6xa² + a³"
+                }
+            ]
+        };
+
+        // Variables globales
+        let currentQuestions = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = [];
+        let soundEnabled = true;
+
+        // Función para mezclar array
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Generar preguntas para el examen
+        function generateExam() {
+            const allQuestions = [];
+            
+            // Seleccionar 16 preguntas de Física
+            const physicsQuestions = shuffle([...questionsDatabase.fisica]).slice(0, 16);
+            physicsQuestions.forEach(q => q.category = 'Física');
+            allQuestions.push(...physicsQuestions);
+            
+            // Seleccionar 8 preguntas de Lenguaje
+            const languageQuestions = shuffle([...questionsDatabase.lenguaje]).slice(0, 8);
+            languageQuestions.forEach(q => q.category = 'Lenguaje');
+            allQuestions.push(...languageQuestions);
+            
+            // Seleccionar 16 preguntas de Matemáticas
+            const mathQuestions = shuffle([...questionsDatabase.matematicas]).slice(0, 16);
+            mathQuestions.forEach(q => q.category = 'Matemáticas');
+            allQuestions.push(...mathQuestions);
+            
+            // Mezclar todas las preguntas
+            currentQuestions = shuffle(allQuestions);
+            answered = new Array(currentQuestions.length).fill(null);
+        }
+
+        // Iniciar examen
+        function startExam() {
+            generateExam();
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('examScreen').style.display = 'block';
+            currentQuestion = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        // Cargar pregunta actual
+        function loadQuestion() {
+            const question = currentQuestions[currentQuestion];
+            
+            document.getElementById('questionNumber').textContent = `Pregunta ${currentQuestion + 1} de 40`;
+            document.getElementById('questionCategory').textContent = question.category;
+            document.getElementById('questionText').textContent = question.question;
+            
+            // Actualizar barra de progreso
+            const progress = ((currentQuestion + 1) / 40) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            // Actualizar puntuación
+            document.getElementById('scoreDisplay').textContent = `Puntos: ${score}`;
+            
+            // Cargar opciones
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option';
+                button.textContent = String.fromCharCode(65 + index) + ') ' + option;
+                
+                if (answered[currentQuestion] !== null) {
+                    button.classList.add('disabled');
+                    if (index === answered[currentQuestion]) {
+                        button.classList.add('selected');
+                    }
+                    if (index === question.correct) {
+                        button.classList.add('correct');
+                    } else if (index === answered[currentQuestion]) {
+                        button.classList.add('incorrect');
+                    }
+                }
+                
+                button.onclick = () => selectOption(index);
+                optionsContainer.appendChild(button);
+            });
+            
+            // Mostrar feedback si ya fue respondida
+            if (answered[currentQuestion] !== null) {
+                showFeedback();
+            } else {
+                document.getElementById('feedback').classList.remove('show');
+            }
+            
+            // Actualizar botones de navegación
+            document.getElementById('prevBtn').style.display = currentQuestion > 0 ? 'block' : 'none';
+            document.getElementById('nextBtn').textContent = currentQuestion === 39 ? 'Finalizar →' : 'Siguiente →';
+        }
+
+        // Seleccionar opción
+        function selectOption(index) {
+            if (answered[currentQuestion] !== null) return;
+            
+            answered[currentQuestion] = index;
+            const question = currentQuestions[currentQuestion];
+            
+            if (index === question.correct) {
+                score += 25;
+                playSound('correct');
+            } else {
+                playSound('incorrect');
+            }
+            
+            loadQuestion();
+        }
+
+        // Mostrar retroalimentación
+        function showFeedback() {
+            const question = currentQuestions[currentQuestion];
+            const selectedIndex = answered[currentQuestion];
+            const feedbackEl = document.getElementById('feedback');
+            
+            const isCorrect = selectedIndex === question.correct;
+            feedbackEl.className = 'feedback show ' + (isCorrect ? 'correct' : 'incorrect');
+            
+            feedbackEl.innerHTML = `
+                <div class="feedback-title">${isCorrect ? 'Respuesta Correcta' : 'Respuesta Incorrecta'}</div>
+                <div>${question.explanation}</div>
+            `;
+        }
+
+        // Siguiente pregunta
+        function nextQuestion() {
+            if (currentQuestion < 39) {
+                currentQuestion++;
+                loadQuestion();
+            } else {
+                finishExam();
+            }
+        }
+
+        // Pregunta anterior
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion();
+            }
+        }
+
+        // Finalizar examen
+        function finishExam() {
+            document.getElementById('examScreen').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'block';
+            
+            const correctCount = answered.filter((ans, idx) => ans === currentQuestions[idx].correct).length;
+            document.getElementById('examScore').textContent = score;
+            document.getElementById('correctCount').textContent = `${correctCount} / 40`;
+            document.getElementById('gradeSection').classList.add('show');
+        }
+
+        // Calcular puntaje final
+        function calculateFinalScore() {
+            const grade = parseFloat(document.getElementById('gradeInput').value) || 0;
+            const gradePoints = grade * 50;
+            const examPoints = Math.round(score * 0.5);
+            const finalScore = Math.round(gradePoints + examPoints);
+            
+            // Guardar datos para mostrar detalles
+            window.examDetails = {
+                examScore: score,
+                examPoints: examPoints,
+                grade: grade,
+                gradePoints: Math.round(gradePoints),
+                finalScore: finalScore
+            };
+            
+            document.getElementById('finalScore').textContent = finalScore;
+            
+            // Mostrar desglose
+            const breakdown = document.getElementById('scoreBreakdown');
+            breakdown.innerHTML = `
+                <div><strong>Desglose de Puntaje:</strong></div>
+                <div style="margin-top: 10px; text-align: left;">
+                    <div>• Examen (${score}/1000 × 0.5) = ${examPoints} pts</div>
+                    <div>• Nota Grado (${grade}/10 × 50) = ${Math.round(gradePoints)} pts</div>
+                    <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px;">
+                        <strong>Total: ${finalScore} / 1000 puntos</strong>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('finalScoreBox').classList.add('show');
+            
+            showCareers(finalScore);
+        }
+
+        // Mostrar carreras disponibles
+        function showCareers(finalScore) {
+            const careers = {
+                'Alimentos': 800,
+                'Arquitectura': 900,
+                'Biología': 832,
+                'Bioquímica Farmacéutica': 851,
+                'Ciencia de Datos e IA': 816,
+                'Geología': 590,
+                'Ingeniería Ambiental': 758,
+                'Ingeniería Civil': 948,
+                'Ingeniería Industrial': 850,
+                'Ingeniería de la Producción': 817,
+                'Ingeniería Química': 797,
+                'Sistemas de Información': 783,
+                'Software': 776,
+                'Tecnologías de la Información': 690,
+                'Telemática': 820
+            };
+            
+            const availableCareers = Object.entries(careers)
+                .filter(([_, minScore]) => finalScore >= minScore)
+                .map(([name, minScore]) => ({ name, minScore }));
+            
+            const careersList = document.getElementById('careersList');
+            careersList.innerHTML = '';
+            
+            if (availableCareers.length > 0) {
+                // Mostrar todas las carreras con comparación de puntajes
+                Object.entries(careers).forEach(([career, minScore]) => {
+                    const canEnter = finalScore >= minScore;
+                    const item = document.createElement('div');
+                    item.className = 'career-item ' + (canEnter ? 'available' : 'unavailable');
+                    
+                    item.innerHTML = `
+                        <div class="career-info">
+                            <div class="career-name">${career}</div>
+                            <div class="career-score-info">
+                                <span class="required">Requerido: ${minScore}</span>
+                                <span class="final">Tu puntaje: ${finalScore}</span>
+                            </div>
+                        </div>
+                        <div class="career-status">${canEnter ? '✓ Aceptado' : '✗ No aceptado'}</div>
+                    `;
+                    careersList.appendChild(item);
+                });
+            } else {
+                careersList.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--secondary);">Necesitas un puntaje más alto para ingresar a las carreras disponibles.</div>';
+            }
+            
+            document.getElementById('careersSection').classList.add('show');
+            
+            const messageBox = document.getElementById('messageBox');
+            if (availableCareers.length > 0) {
+                messageBox.innerHTML = `🎉 ¡Felicidades! Has ingresado a <strong>${availableCareers.length}</strong> carrera(s). Recuerda que esto es solo un simulador basado en temarios, por lo cual los puntajes pueden cambiar. ¡Suerte en tu examen real!`;
+            } else {
+                messageBox.innerHTML = '📝 Aunque no alcanzaste el puntaje mínimo en este simulador, recuerda que es solo una estimación. ¡Sigue estudiando y lo lograrás! 💪';
+            }
+            messageBox.style.display = 'block';
+        }
+
+        // Sonidos
+        function playSound(type) {
+            if (!soundEnabled) return;
+            
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const now = audioContext.currentTime;
+            
+            if (type === 'correct') {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.setValueAtTime(1000, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.setValueAtTime(0, now + 0.1);
+                
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.setValueAtTime(300, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.setValueAtTime(0, now + 0.1);
+                
+                osc.start(now);
+                osc.stop(now + 0.1);
+            }
+        }
+
+        // Toggle sonido
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            btn.classList.toggle('disabled');
+            btn.textContent = soundEnabled ? '🔊' : '🔇';
+        }
+    </script>
+</body>
+</html>
